@@ -145,6 +145,7 @@ func JwtVerify(next http.Handler) http.Handler {
 		toValidate := map[string]string{}
 		toValidate["aud"] = os.Getenv("JWT_AT_AUD")
 		toValidate["cid"] = os.Getenv("JWT_AT_CLIENT_ID")
+		toValidate["sub"] = os.Getenv("JWT_AT_CLIENT_ID")
 
 		jwtVerifierSetup := jwtverifier.JwtVerifier{
 			Issuer:           os.Getenv("JWT_AT_ISS"),
@@ -152,7 +153,7 @@ func JwtVerify(next http.Handler) http.Handler {
 		}
 
 		verifier := jwtVerifierSetup.New()
-		verifier.SetLeeway("60")
+		verifier.SetLeeway("2m")
 
 		token, err := verifier.VerifyAccessToken(access_token)
 
