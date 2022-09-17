@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
+	jwtverifier "github.com/okta/okta-jwt-verifier-golang"
 )
 
 func main() {
@@ -141,6 +142,29 @@ func JwtVerify(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
 		ParseHttpHeader(r)
+
+		access_token := r.Header.Get("Authorization")
+
+		if strings.HasPrefix(access_token, "Bearer ") {
+			access_token = strings.TrimPrefix(access_token, "Bearer ")
+			fmt.Sprintf("Access Token is : %s", access_token)
+		}
+
+		toValidate := map[string]string{}
+		toValidate["aud"] = os.Getenv("JWT_AT_AUD")
+		toValidate["cid"] = os.Getenv("JWT_AT_CLIENT_ID")
+
+		jwtVerifierSetup := jwtverifier.JwtVerifier{
+			Issuer:           os.Getenv("JWT_AT_ISS"),
+			ClaimsToValidate: toValidate,
+		}
+
+		verifier := jwtVerifierSetup.New()
+		verifier.SetLeeway(60)
+
+		token, err := verifier.VerifyAccessToken(access_token)
+
+		fmt.Sprintf("Verified Token %v and error %v", token, err)
 
 		var header = r.Header.Get("x-access-token")
 
