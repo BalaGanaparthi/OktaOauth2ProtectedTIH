@@ -174,16 +174,24 @@ func JwtVerify(next http.Handler) http.Handler {
 		scopes := token.Claims["scp"].([]interface{})
 
 		requiredScope := os.Getenv("JWT_AT_REQ_SCOPE")
+		var hasScope bool
 		for _, scope := range scopes {
 			if scope == requiredScope {
+				hasScope = true
 				fmt.Println("Has required scope", scope)
-				next.ServeHTTP(w, r)
-				fmt.Println("Done Token enrichment.")
 			}
 		}
 
-		w.WriteHeader(http.StatusUnauthorized)
-		json.NewEncoder(w).Encode("Required scopes not found")
+		if hasScope {
+			fmt.Println("Invoke token entichment...")
+			next.ServeHTTP(w, r)
+			fmt.Println("Done Token enrichment.")
+		} else {
+			fmt.Println("Invalid access token...")
+			w.WriteHeader(http.StatusUnauthorized)
+			json.NewEncoder(w).Encode("Required scopes not found")
+			fmt.Println("Aboth token enrichment...")
+		}
 
 	})
 }
