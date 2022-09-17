@@ -160,11 +160,11 @@ func JwtVerify(next http.Handler) http.Handler {
 		}
 
 		verifier := jwtVerifierSetup.New()
-		verifier.SetLeeway(60)
+		verifier.SetLeeway("60")
 
 		token, err := verifier.VerifyAccessToken(access_token)
 
-		fmt.Sprintf("Verified Token %v and error %v", token, err)
+		fmt.Sprintf("Verified Token %+v and error %v", token, err)
 
 		var header = r.Header.Get("x-access-token")
 
