@@ -54,7 +54,7 @@ func processTokenInlineHook(w http.ResponseWriter, r *http.Request) {
 	commandValue_1 := CommandValue{
 		Op:    "replace",
 		Path:  "/claims/aud1",
-		Value: fmt.Sprintf("%v1", audClaim),
+		Value: fmt.Sprintf("%s1", audClaim[0]),
 	}
 
 	u, err := url.Parse(tp.Data.Context.Request.URL.Value)
