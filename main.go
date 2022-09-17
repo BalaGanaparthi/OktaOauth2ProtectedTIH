@@ -147,7 +147,7 @@ func JwtVerify(next http.Handler) http.Handler {
 
 		if strings.HasPrefix(access_token, "Bearer ") {
 			access_token = strings.TrimPrefix(access_token, "Bearer ")
-			fmt.Sprintf("Access Token is : %s", access_token)
+			fmt.Println("Access Token is : ", access_token)
 		}
 
 		toValidate := map[string]string{}
@@ -164,7 +164,7 @@ func JwtVerify(next http.Handler) http.Handler {
 
 		token, err := verifier.VerifyAccessToken(access_token)
 
-		fmt.Sprintf("Verified Token %+v and error %v", token, err)
+		fmt.Println("Verified Token and error", token, err)
 
 		var header = r.Header.Get("x-access-token")
 
