@@ -153,7 +153,6 @@ func JwtVerify(next http.Handler) http.Handler {
 		toValidate := map[string]string{}
 		toValidate["aud"] = os.Getenv("JWT_AT_AUD")
 		toValidate["cid"] = os.Getenv("JWT_AT_CLIENT_ID")
-		toValidate["scp"] = ""
 
 		jwtVerifierSetup := jwtverifier.JwtVerifier{
 			Issuer:           os.Getenv("JWT_AT_ISS"),
@@ -165,39 +164,25 @@ func JwtVerify(next http.Handler) http.Handler {
 
 		token, err := verifier.VerifyAccessToken(access_token)
 
+		if err != nil {
+			w.WriteHeader(http.StatusUnauthorized)
+			json.NewEncoder(w).Encode("Invalid access token")
+			return
+		}
 		scopes := token.Claims["scp"].([]interface{})
 
 		requiredScope := os.Getenv("JWT_AT_REQ_SCOPE")
 		for _, scope := range scopes {
 			if scope == requiredScope {
 				fmt.Println("Has required scope", scope)
-
+				next.ServeHTTP(w, r)
+				fmt.Println("Done Token enrichment.")
 			}
 		}
 
-		fmt.Println("Verified Token and error", token, err)
+		w.WriteHeader(http.StatusUnauthorized)
+		json.NewEncoder(w).Encode("Required scopes not found")
 
-		var header = r.Header.Get("x-access-token")
-
-		header = strings.TrimSpace(header)
-
-		fmt.Println("Authenticate with x-access-token header")
-
-		if header == "" {
-			w.WriteHeader(http.StatusForbidden)
-			json.NewEncoder(w).Encode("Missing auth token")
-			return
-		} else {
-			if header != os.Getenv("x-access-token") {
-				w.WriteHeader(http.StatusUnauthorized)
-				json.NewEncoder(w).Encode("Unmatched auth token")
-				return
-			}
-			fmt.Println("Authentication is successful...")
-		}
-		fmt.Println("Invoke token entichment...")
-		next.ServeHTTP(w, r)
-		fmt.Println("Done Token enrichment.")
 	})
 }
 
