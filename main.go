@@ -153,6 +153,7 @@ func JwtVerify(next http.Handler) http.Handler {
 		toValidate := map[string]string{}
 		toValidate["aud"] = os.Getenv("JWT_AT_AUD")
 		toValidate["cid"] = os.Getenv("JWT_AT_CLIENT_ID")
+		toValidate["scp"] = ""
 
 		jwtVerifierSetup := jwtverifier.JwtVerifier{
 			Issuer:           os.Getenv("JWT_AT_ISS"),
@@ -163,6 +164,16 @@ func JwtVerify(next http.Handler) http.Handler {
 		verifier.SetLeeway("60")
 
 		token, err := verifier.VerifyAccessToken(access_token)
+
+		scopes := token.Claims["scp"].([]interface{})
+
+		requiredScope := os.Getenv("JWT_AT_REQ_SCOPE")
+		for _, scope := range scopes {
+			if scope == requiredScope {
+				fmt.Println("Has required scope", scope)
+
+			}
+		}
 
 		fmt.Println("Verified Token and error", token, err)
 
