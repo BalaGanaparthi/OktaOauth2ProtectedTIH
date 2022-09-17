@@ -41,15 +41,6 @@ func processTokenInlineHook(w http.ResponseWriter, r *http.Request) {
 	json.Marshal(tp)
 
 	audClaim := strings.Split(tp.Data.Access.Claims.Aud, ",")
-	print("  ->  ", fmt.Sprintf("%v", audClaim), "\n")
-
-	b := new(strings.Builder)
-	json.NewEncoder(b).Encode(audClaim)
-	print("  ->  ", b.String(), "\n")
-	print("  ->  ", []string{b.String()}, "\n")
-
-	aud, _ := json.Marshal(audClaim)
-	print("  ->  ", aud, "\n")
 
 	commandValue_1 := CommandValue{
 		Op:    "add",
@@ -77,8 +68,6 @@ func processTokenInlineHook(w http.ResponseWriter, r *http.Request) {
 	var commands []Command
 
 	appendCommands(&commands, &command_1)
-
-	fmt.Println("Any Errors during Token-Enrichment-Service Execution? : ", isError)
 
 	if isError {
 		commandValue_err := CommandValue{
@@ -110,8 +99,9 @@ func processTokenInlineHook(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if !isError {
-		fmt.Println("**** Successful ***")
+		fmt.Println("**** Responding ***")
 		w.Write(jsonResponse)
+		fmt.Println("**** Response Successful ***")
 	}
 
 	end := time.Now()
@@ -179,6 +169,7 @@ func JwtVerify(next http.Handler) http.Handler {
 			if scope == requiredScope {
 				hasScope = true
 				fmt.Println("Has required scope", scope)
+				break
 			}
 		}
 
@@ -207,8 +198,8 @@ func ParseHttpBody(r *http.Request) {
 }
 
 func ParseHttpHeader(r *http.Request) {
-	fmt.Println("***Headers [Start]***")
 
+	fmt.Println("***Headers [Start]***")
 	headers := r.Header
 
 	for k, v := range headers {
@@ -223,6 +214,9 @@ func ParseHttpHeader(r *http.Request) {
 		fmt.Println("Cookie : ", cookie)
 	}
 	fmt.Println("***Cookie [End]***")
+
+	fmt.Println("***Content Length : ", r.ContentLength)
+
 }
 
 type TokenPayload struct {
@@ -377,38 +371,4 @@ type ErrorCause struct {
 	LocationType string `json:"locationType"`
 	Location     string `json:"location"`
 	Domain       string `json:"domain"`
-}
-
-func getSampleErrorSummary(string) string {
-
-	errorSummary := url.QueryEscape(`{
-		"mfa_enrollment_policies" : {
-			"1" : {
-				"name" : "MFA Policy App-A",
-				"description" : "MFA policy for the users of App-A",
-				"status":"ACTIVE",
-				"is_oie" : true,
-				"groups_included" : ["App A: Users Group"],
-				"phone_number":{"enroll" : "OPTIONAL"},
-				"okta_email":{"enroll" : "REQUIRED"},
-				"google_otp":{"enroll" : "NOT_ALLOWED"},
-				"fido_webauthn":{"enroll" : "NOT_ALLOWED"},
-				"okta_verify":{"enroll" : "OPTIONAL"},
-				"okta_password":{"enroll" : "REQUIRED"},
-				"rules" : {
-					"1" : {
-						"name" : "MFA Policy App-A Rule",
-						"priority" : 1,
-						"status":"ACTIVE",
-						"enroll":"LOGIN",
-						"network_connection":"ANYWHERE",
-						"network_includes" : [],
-						"network_excludes" : []
-					}
-				}
-			}
-		}
-	}`)
-
-	return errorSummary
 }
