@@ -1,0 +1,4 @@
+github.com/gorilla/mux v1.8.0 h1:i40aqfkR1h2SlN9hojwV5ZA91wcXFOvkdNIeFDP5koI=
+github.com/gorilla/mux v1.8.0/go.mod h1:DVbg23sWSpFRCP0SfiEN6jmj59UnW/n46BH5rLB71So=
+github.com/grokify/go-pkce v0.2.0 h1:IwjppAAUnKZuDo2e3S+EKiwXopAc2UHFzoOFbC24bO0=
+github.com/grokify/go-pkce v0.2.0/go.mod h1:DABMww8Ue+sVrmOBDrt8dH8iFFUtSfmUCKOS3nh4ye8=
