@@ -24,8 +24,20 @@ git push heroku master
 heroku logs --tail
 ```
 
+```sh
+heroku config:set --app=oauth2-token-inline-hook JWT_AT_AUD=Https://IDMapper-TIH-Service.com
+heroku config:set --app=oauth2-token-inline-hook JWT_AT_CLIENT_ID=0oa5fmydlqntI8ExQ1d7
+heroku config:set --app=oauth2-token-inline-hook JWT_AT_ISS=https://star.oktapreview.com/oauth2/aus5fqoxl0AWuk8SL1d7
+heroku config:set --app=oauth2-token-inline-hook JWT_AT_REQ_SCOPE=idmapper.tihservice.execute
+```
+
 # Push changes to Heroku
 
 ```sh
 git add -A . && git commit -m "Enh|Fix|Feat: {Change details}" && git push heroku master && heroku logs --tail
+```
+
+Heroku CLI Commands
+```hyperlink
+https://devcenter.heroku.com/articles/heroku-cli-commands
 ```
