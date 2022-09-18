@@ -1,0 +1,123 @@
+@startuml TokenEnrichment
+skinparam ParticipantPadding 10
+skinparam BoxPadding 5
+skinparam roundcorner 7
+autonumber
+skinparam sequenceMessageAlign center
+skinparam responseMessageBelowArrow true
+
+title \n<u><b>Protect Token Inline Hook Service with Okta and OAuth2</b></u>\n
+
+box "Resource Owner"  
+    actor User as user
+end box
+
+box "Client" #f08080
+    participant "ClientApp" as client 
+end box
+
+box "Okta " #LightSkyBlue 
+    participant EndUser_AuthServer as eaz 
+    participant M2M_AuthServer as maz
+    participant M2MApp as ma
+end box
+
+box "Token Enrichment Service" #f08080
+    participant TokenService as tkns
+end box
+
+box "Resource Servers" #f08080
+    participant ResourceServer as rs
+end box
+||||
+note across
+    \t\t\t\t\t\t\t\t\t[<u>**Setup**</u>] 
+    **M2MApp** : Configured with client creds grant w/ <b>Public key / Private key</b> for Client authentication
+    **M2MApp** : Not assigned to any users (Configured as Internal-Only App)
+    **TokenService** : Configured with OAuth 2.0 Authentication and Client Authentication as Use private key
+    **TokenService** : Whitelist Okta CIDR ranges (<i>https://s3.amazonaws.com/okta-ip-ranges/ip_ranges.json</i>)
+end note
+||||
+==User Authentication and Authorization==
+||||
+user o-> client  ++ #Grey : Access resource
+note over client
+    ""Access protected <font color=Grey><i>ResourceServer</i></font>""
+    ""from client w/o access-token""
+end note
+||||
+client -> eaz ++ #gold : /authorize
+note over eaz
+    ""Authorization code grant w/ PKCE(CC)""
+    ""w/ ClientSPApp clientID""
+    ""w/ Resource Server scopes ...""
+end note
+||||
+alt [ - No Okta Session ]
+    eaz -> client : Prompt authN (optionally w/ MFA)
+    user o-> client : Response to prompts
+    note over client
+        ""Respond to authN (+ MFA) &""
+        ""any required consents from""
+        ""<font color=Grey><i>EndUser_AuthServer</i></font>""
+    end note
+    ||||
+    client -> eaz : AuthN & AuthZ response(s)
+    eaz --> eaz  #Grey : generate client_assertion and sign w/ private key
+    note over eaz
+        ""Create JWT and Sign w\ Private Key""
+        ""<i>aud</i> : EndUser_AuthServer's (token?) endpoint""
+        ""<i>iss</i> : M2MApp client_id""
+        ""<i>sub</i> : M2MApp client_id""
+        ""<i>exp</i> : token's TTL (max 60mins)""
+        ""...""
+    end note
+    ||||
+    eaz -> maz ++ #gold: /token (client_creds with configured scopes)
+    note over eaz
+        ""Invoke /token with the following params""
+        ""<i>grant_type</i> : client_credentials""
+        ""<i>client_assertion_type</i> : ""
+        ""     <font color=blue><i>urn:ietf:params:oauth:client-assertion-type:jwt-bearer</i></font>""
+        ""<i>client_assertion</i> : {Signed JWT}""
+        ""<i>scope</i> : coonfigured scopes""
+    end note
+    maz ->o ma : get pub key if the sub (client id)
+    note over maz
+        ""Get the client_id (sub) in JWT""
+        ""Get KID of public configured in the app""
+        ""correcponding to client_id""
+    end note
+    |||
+    maz -> maz : validate client_assertion
+    note over maz
+        ""Validate the signed client_assertion""
+        ""/w the public key of app""
+    end note
+    |||
+    maz -> eaz -- : send m2m access token
+    eaz -> tkns ++ #Grey: invoke token endpoint with m2m access token
+    tkns -> tkns : validate m2m token
+    note over tkns
+        ""Validate m2m access token JWT ""
+        ""locally at TokenService""
+        ""<i>iss, aud, sub, scp...</i>""
+    end note
+    ||||
+    tkns -> tkns : enrich token(s)
+    note over tkns
+        ""Allow Enrichment""
+        ""on successful validation""
+    end note
+    ||||
+    tkns -> eaz -- : enriched token(s)
+    eaz -> eaz : create okta session for the user
+end
+||||
+eaz -> client : respond with auth code
+client -> eaz : /token with auth code
+eaz -> eaz : mint token(s) with enriched claims
+eaz -> client : send user token(s)
+client -> rs ++ #grey: Access Resource Server with the user token(s)
+||||
+@enduml

@@ -29,3 +29,6 @@
 !config/TEMPLATE_config.json
 !main.go
 !Dockerfile
+!SETUP.md
+!OAuthTIHInvokeFlow.puml
+!TokenEnrichment.svg
