@@ -152,8 +152,7 @@
     CODE_VERIFIER : abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ
     CODE_CHALLENGE : zwBxoIOtPkc0nS4_vIltB6DVBYCzNcN-OX1Akb-OcTs 
     ```
-
-    [Sample Authorization URL Link](https://star.oktapreview.com/oauth2/aus5fx72s7ZE7T5bu1d7/v1/authorize?client_id=0oa5fwevhkX4mJhEE1d7&response_type=code&response_mode=fragment&scope=openid%20profile%20offline_access&redirect_uri=http://localhost:8080/login/callback&state=83344d15-7529-42d1-bc2c-de446bc2cd10&nonce=7ee0a4af-99d0-4372-bd65-6bd2e22872c2&code_challenge_method=S256&code_challenge=zwBxoIOtPkc0nS4_vIltB6DVBYCzNcN-OX1Akb-OcTs)
+    <a href="https://star.oktapreview.com/oauth2/aus5fx72s7ZE7T5bu1d7/v1/authorize?client_id=0oa5fwevhkX4mJhEE1d7&response_type=code&response_mode=fragment&scope=openid%20profile%20offline_access&redirect_uri=http://localhost:8080/login/callback&state=83344d15-7529-42d1-bc2c-de446bc2cd10&nonce=7ee0a4af-99d0-4372-bd65-6bd2e22872c2&code_challenge_method=S256&code_challenge=zwBxoIOtPkc0nS4_vIltB6DVBYCzNcN-OX1Akb-OcTs" target="_blank">Sample Authorization URL Link</a>
   
 3.  Execut the constructed URL in the browser 
 4.  Get the `code` value from the browser after invoking the URL
