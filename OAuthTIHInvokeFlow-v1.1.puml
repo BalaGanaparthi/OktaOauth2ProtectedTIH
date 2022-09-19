@@ -29,7 +29,7 @@ end box
 box "Resource Servers" #f08080
     participant ResourceServer as rs
 end box
-||||
+|||| 
 note across
     \t\t\t\t\t\t\t\t\t[<u>**Setup**</u>] 
     **M2MApp** : Configured with client creds grant w/ <b>Public key / Private key</b> for Client authentication
