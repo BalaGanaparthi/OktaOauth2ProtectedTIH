@@ -32,32 +32,35 @@ end box
 |||| 
 note across
     \t\t\t\t\t\t\t\t\t[<u>**Setup**</u>] 
-    **M2MApp** : Configured with client creds grant w/ <b>Public key / Private key</b> for Client authentication
-    **M2MApp** : Not assigned to any users (Configured as Internal-Only App)
+    **M2MApp** : Configured with <i>client crentials</i> grant-type w/ <b>Public key / Private key</b> for Client authentication
+    **M2MApp** : Not assigned to any users (Configured to be used as Internal-Only App)
     (<font color=blue>M2M = Machine to Machine</font>)
     **TokenService** : Configured with OAuth 2.0 Authentication and Client Authentication as Use private key
     **TokenService** : Whitelist Okta CIDR ranges (<i>https://s3.amazonaws.com/okta-ip-ranges/ip_ranges.json</i>)
 end note
 ||||
-==User Authentication and Authorization==
+==Clent request for User Tokens from EndUser AS==
 ||||
 user o-> client  ++ #Grey : Access resource
-note over client
+note over client 
     ""Access protected <font color=Grey><i>ResourceServer</i></font>""
     ""from client w/o access-token""
 end note
 ||||
 client -> eaz ++ #gold : /authorize
-note over eaz
+note over eaz 
     ""Authorization code grant w/ PKCE(CC)""
     ""w/ ClientSPApp clientID""
     ""w/ Resource Server scopes ...""
 end note
 ||||
-group  No Okta Session 
+group No Okta Session
+||||
+==User Authentication and Authorization==
+||||
     eaz -> client : Prompt authN (optionally w/ MFA)
     user o-> client : Response to prompts
-    note over client
+    note over client 
         ""Respond to authN (+ MFA) &""
         ""any required consents from""
         ""<font color=Grey><i>EndUser_AuthServer</i></font>""
@@ -67,6 +70,9 @@ group  No Okta Session
     eaz -> eaz : check for m2m access token in cache
     ||||
     group m2m Access token not in cache
+    ||||
+    ==EndUser AS requests for machine to machine tokens from M2M AS using private-key signed jwt/client_assertions== 
+    ||||
         eaz --> eaz  #Grey : generate client_assertion and sign w/ private key
         note over eaz
             ""Create JWT and Sign w\ Private Key""
@@ -79,12 +85,12 @@ group  No Okta Session
         ||||
         eaz -> maz ++ #gold: /token (client_creds with configured scopes)
         note over eaz
-            ""Invoke /token with the following params""
+            ""Invoke /token endpoint with the following params""
             ""<font color=blue>grant_type</font> : <i>client_credentials</i>""
             ""<font color=blue>client_assertion_type</font> : ""
-            "" <i>urn:ietf:params:oauth:client-assertion-type:jwt-bearer</i>""
-            ""<font color=blue><i>client_assertion</font> : <i>{Signed JWT}</i>""
-            ""<font color=blue>scope</font> : <i>configured scopes</i>""
+            ""  <i>urn:ietf:params:oauth:client-assertion-type:jwt-bearer</i>""
+            ""<font color=blue><i>client_assertion</font> : <i>{Signed JWT w/ private-key}</i>""
+            ""<font color=blue>scope</font> : <i>{w/ scopes configured during TIH registration}</i>""
         end note
         maz ->o ma : get pub key of sub (client id)
         note over maz
@@ -94,7 +100,7 @@ group  No Okta Session
         end note
         ||||
         maz -> maz : validate client_assertion
-        note right maz
+        note over maz
             ""Validate the signed client_assertion with""
             ""the public key of app matching client_id""
         end note
@@ -112,6 +118,9 @@ group  No Okta Session
     end note
     ||||
     group Successfully recieved m2m access token from M2M Authorization Server
+    ||||
+    ==EndUser AS executes token enrichment service with m2m access token==
+    ||||
         eaz -> tkns ++ #Grey: invoke token endpoint with m2m access token
         tkns -> tkns : validate m2m token
         note over tkns
@@ -133,10 +142,15 @@ group  No Okta Session
     ||||
 end
 ||||
+==OAuth2 flow to exchange code for (user) tokens==
+||||
 eaz -> client : respond with auth code
 client -> eaz : /token with auth code
 eaz -> eaz : mint token(s) with enriched claims
 eaz -> client : send user token(s)
+||||
+==OAuth2 flow to access resource server with user's access token==
+||||
 client -> rs ++ #grey: Access Resource Server with the user token(s)
 ||||
 @enduml

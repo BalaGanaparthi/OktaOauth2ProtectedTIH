@@ -137,6 +137,12 @@ func JwtVerify(next http.Handler) http.Handler {
 
 		access_token := r.Header.Get("Authorization")
 
+		if len(access_token) == 0 {
+			w.WriteHeader(http.StatusUnauthorized)
+			json.NewEncoder(w).Encode("AuthZ Error : Need an access token to use this service")
+			return
+		}
+
 		if strings.HasPrefix(access_token, "Bearer ") {
 			access_token = strings.TrimPrefix(access_token, "Bearer ")
 			fmt.Println("Access Token is : ", access_token)
@@ -158,8 +164,9 @@ func JwtVerify(next http.Handler) http.Handler {
 		token, err := verifier.VerifyAccessToken(access_token)
 
 		if err != nil {
+			fmt.Println("Error validating access token : ", err)
 			w.WriteHeader(http.StatusUnauthorized)
-			json.NewEncoder(w).Encode("Invalid access token")
+			json.NewEncoder(w).Encode(fmt.Sprintf("AuthZ Error : Invalid access token : %v", err))
 			return
 		}
 		scopes := token.Claims["scp"].([]interface{})
