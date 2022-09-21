@@ -6,7 +6,7 @@ autonumber
 skinparam sequenceMessageAlign center
 skinparam responseMessageBelowArrow true
 
-title \n<u><b>Protect Token Inline Hook Service with Okta and OAuth2</b></u>\n
+title \n<u><b>Protect Token Inline Hook Service with Okta and OAuth2 with Private_Key_JWT</b></u>\n
 
 box "Resource Owner"  
     actor User as user
@@ -17,13 +17,13 @@ box "Client" #f08080
 end box
 
 box "Okta " #LightSkyBlue 
-    participant EndUser_AuthServer as eaz 
+    participant CVSApp_AuthServer as eaz 
     participant M2M_AuthServer as maz
-    participant M2MApp as ma
+    participant M2MWebHookApp as ma
 end box
 
-box "Token Enrichment Service" #f08080
-    participant TokenService as tkns
+box "Token Inline Hook Service" #f08080
+    participant LoginHelperService as tkns
 end box
 
 box "Resource Servers" #f08080
@@ -32,11 +32,11 @@ end box
 |||| 
 note across
     \t\t\t\t\t\t\t\t\t[<u>**Setup**</u>] 
-    **M2MApp** : Configured with <i>client crentials</i> grant-type w/ <b>Public key / Private key</b> for Client authentication
-    **M2MApp** : Not assigned to any users (Configured to be used as Internal-Only App)
+    **M2MWebHookApp** : Configured with <i>client credentials</i> grant-type w/ <b>Public key / Private key</b> for Client authentication
+    **M2MWebHookApp** : Not assigned to any users (Configured to be used as Internal-Only Virtual App)
     (<font color=blue>M2M = Machine to Machine</font>)
-    **TokenService** : Configured with OAuth 2.0 Authentication and Client Authentication as Use private key
-    **TokenService** : Whitelist Okta CIDR ranges (<i>https://s3.amazonaws.com/okta-ip-ranges/ip_ranges.json</i>)
+    **LoginHelperService** : Token Inline Hook Service protected with OAuth 2.0 Authorization issued from M2M_AuthServer
+    **LoginHelperService** : Whitelist Okta CIDR ranges (<i>https://s3.amazonaws.com/okta-ip-ranges/ip_ranges.json</i>)
 end note
 ||||
 ==Clent request for User Tokens from EndUser AS==
