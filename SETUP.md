@@ -1,13 +1,13 @@
 # Setup to protect Token Hook with Okta and OAuth2 Pub/Priv Keys
 
-## Key Setup
+## Public/Private Key Setup
 1. Navigate to {`Admin Console`} -> `Workflow` -> `Key Management`
 2. Click `Create new key` 
-3. Enter unique `Key name` (Example : `TIH-OAuth2-Key`)
+3. Enter unique `Key name` (Example : `Webhook-OAuth2-Key`)
 4. Click `Create Key`
 5. Click `Actions` on the key that was just created
 6. Click on `Copy public key`
-   1. > Save the copied public key for later use (during app creation) : (Referred as TIH_PUBLIC_KEY)
+   1. > Save the copied public key for later use (during app creation) : (Referred as Webhook-OAuth2_PUBLIC_KEY)
  
 ## TIH Client Application (Acts as client app for invoking TIH service)
 > This Application represents the client app for Oauth2 protected TIH (this app will be used by Okta when communicating with OAuth2 protected TIH service)
@@ -16,19 +16,19 @@
 3. For `Sign-in method` select `OIDC - OpenID Connect`
 4. For `Application type` select `Web Application`
 5. Click `Next`
-6. Enter `App integration name` (Example : `TIH-OAuth2-Client-App`)
+6. Enter `App integration name` (Example : `M2MWebHookApp`)
 7. For `Grant type` select `Client Credentials`
 8. For `Assignments` -> `Controlled access` select `Skip group assignment for now`
 9. Click `Save`
 10. Being at `General` tab, click on `Edit` link on the `Client Credentials` section
 11. For `Client authentication` select `Public key / Private key` 
 12. At `PUBLIC KEYS` section, for `Configuration` select `Save keys in Okta` (This is the default selection)
-13. Click `Add key` and paste the public key saved during `Key Setup` (TIH_PUBLIC_KEY) to the text area in the `Add a public key` dialog
+13. Click `Add key` and paste the public key saved during `Key Setup` (Webhook-OAuth2_PUBLIC_KEY) to the text area in the `Add a public key` dialog
 14. Click `Done`
 15. Click `Save`
 16. Click `Save` for the additional dialog `Existing client secrets will no longer be used`
 17. Being at `General` tab, copy `Client ID` of the application  
-    1.  > Save the copied client ID for later use (during Token Inline Hook registration) : (Referred as TIH_CLIENT-APP_CLIENT_ID)
+    1.  > Save the copied client ID for later use (during Token Inline Hook registration) : (Referred as M2MWebHookApp_CLIENT_ID)
     2.  0oa5fmydlqntI8ExQ1d7
 
 ## Create new Authorization server for TIH service (API Management)
@@ -37,25 +37,25 @@
 1. Navigate to {`Admin Console`} -> `Security` -> `API`
 2. Being at `Authorization Servers` tab, click on `Add Authorization Server`
 3. Enter values for `Name`, `Audience` and `Description`
-   1. > Example values : Name = `IDMapper-TIH-Service`, Audience = `Https://IDMapper-TIH-Service.com` and Description = `Issuer of Oauth2 tokens for IDMapper-TIH-Service`
+   1. > Example values : Name = `M2M_AuthServer`, Audience = `Https://M2M_AuthServer.com` and Description = `Issuer of Oauth2 tokens for M2MWebHookApp`
    2. > Note : Value provided for Audience will be validated at the TIH Service 
 4. Click `Save`
-5. Create scope for `IDMapper-TIH-Service`
+5. Create scope for `M2M_AuthServer`
    1. Being at the newly created Authorization Server, navigate to `Scopes` tab
    2. Click `Add Scope`
    3. Enter values for `Name`, `Display phrase` and `Description` and leave the other fields as default (un-selected)
-      1. > Example values : Name `idmapper.tihservice.execute`, Display phrase = `Execute idmapper token service` and Description = `Allow the client to execute IDMapper token inline service`
+      1. > Example values : Name `idmapper.token-enrichment.execute`, Display phrase = `Execute idmapper token enrichment service` and Description = `Allow the client (M2MWebHookApp) to execute IDMapper token enrichment service`
    4. Click `Create`
 6. Navigate to `Access Policies` tab
 7. Click `Add Policy`
-8. Enter values for `Name`, `Description` and for `Assign to` select `The following clients:` and add the TIH OAuth2 Client application (`TIH-OAuth2-Client-App`)
-   1. > Example values : Name = `IDMapper TIH Service Policy` and Description = `IDMapper token inline hook service policy`
+8. Enter values for `Name`, `Description` and for `Assign to` select `The following clients:` and add the Token Inline Hook OAuth2 Client application (`M2MWebHookApp`)
+   1. > Example values : Name = `M2MWebHookApp Policy` and Description = `M2MWebHookApp policy`
 9. Click `Create Policy`
 10. Being at the access policy just created, click on `Add Rule`
 11. And enter the following values to create the rule
-    1.  Enter the `Rule Name` (Example : `IDMapper TIH Service Rule`)
+    1.  Enter the `Rule Name` (Example : `M2MWebHookApp Rule`)
     2.  For `IF Grant type is` select only (`Client acting on behalf of itself`)  -> `Client Credentials`
-    3.  For `Scopes requested` select `Assigned the app and a member of one of the following:` and enter `idmapper.tihservice.execute` into the textbox
+    3.  For `Scopes requested` select `Assigned the app and a member of one of the following:` and enter `idmapper.token-enrichment.execute` into the textbox
     4.  Leave the rest as default
 12. Click `Create Rule`
 13. Copy Issuer url of the authorization server
@@ -70,31 +70,31 @@
 ## Register OAuth protected Token Inline Hook
 1. Navigate to {`Admin Console`} -> `Workflow` -> `Inline Hooks`
 2. Click on `Add Inline Hook` and select `Token` from the drop-down menue
-3. Enter `Name` (Example : `Oauth2 Protected IDMapper`)
+3. Enter `Name` (Example : `LoginHelperService`)
 4. Enter `URL` (With the TIH_ENDPOINT_URL of the deployed TIH service)  
 4. For `Authentication` select `OAuth 2.0`
-5. For `Oauth2 Protected IDMapper` select `Use private key`
-6. For `Client ID` enter the client id of the TIH client app : (Value stored previously as TIH_CLIENT-APP_CLIENT_ID) 
-7. For `Public key` select the key created previously (Example : TIH-OAuth2-Key)
+5. For `LoginHelperService` select `Use private key`
+6. For `Client ID` enter the client id of the TIH client app : (Value stored previously as M2MWebHookApp_CLIENT_ID) 
+7. For `Public key` select the key created previously (Example : Webhook-OAuth2-Key)
 8. For `Token URL` enter the value saved as `${TIH_ENDPOINT_URL}`
-9. For Scope enter the scope create previousl : `idmapper.tihservice.execute`
+9. For Scope enter the scope create previousl : `idmapper.token-enrichment.execute`
 10. Click `Save`
 
 ## Create a Single Page Application that represents as a Customer facing application
-> Represents user facing application
+> Represents user facing application (Example : Specialty)
 1. Navigate to {`Admin Console`} -> `Applications` -> `Applications`
 2. Click `Create App Integration`
 3. For `Sign-in method` select `OIDC - OpenID Connect`
 4. For `Application type` select `Single-Page Application`
 5. Click `Next`
-6. Enter `App integration name` (Example : `ClientSPApp`)
+6. Enter `App integration name` (Example : `CVSClientApp`)
 7. For `Grant type` accept defaults (`Authorization Code` Selected)
 8. For `Assignments` -> `Controlled access` select `Allow everyone in your organization to access`
 9. For `Enable immediate access` accept default (`Enable immediate access with Federation Broker Mode` Selected)
 10. Click `Save`
 11. Being at `General` tab, copy `Client ID` of the application  
     1.  > Save the copied client ID for later use : (Referred as SP-APP_CLIENT_ID)
-    2.  0oa5fwevhkX4mJhEE1d7
+    2.  Example value : 0oa5fwevhkX4mJhEE1d7
 
 ## Create an Authorization Server for Authenticating and Authorizing the end-users
 > Represents the Authorization server interacting with end-users accessing user-facing apps
@@ -104,24 +104,24 @@
 1. Navigate to {`Admin Console`} -> `Security` -> `API`
 2. Being at `Authorization Servers` tab, click on `Add Authorization Server`
 3. Enter values for `Name`, `Audience` and `Description`
-   1. > Example values : Name = `EndUser-AS`, Audience = `Https://End-User.com` and Description = `Issuer of end-user tokens for client facing applications`
+   1. > Example values : Name = `CVSApp_AuthServer`, Audience = `Https://CVSApp.com` and Description = `Issuer of end-user tokens for client facing applications (eg : Specialty)`
 4. Click `Save`
 5. Navigate to `Access Policies` tab
 7. Click `Add Policy`
-8. Enter values for `Name`, `Description` and for `Assign to` select `The following clients:` and add the Client facing single page application (`ClientSPApp`)
-   1. > Example values : Name = `End-User Policy` and Description = `Policy with rule to invoke OAuth2 protected TIH`
+8. Enter values for `Name`, `Description` and for `Assign to` select `The following clients:` and add the Client facing single page application (`CVSClientApp`)
+   1. > Example values : Name = `CVSClientApp Policy` and Description = `Policy with rule to invoke OAuth2 protected TIH`
 9. Click `Create Policy`
 10. Being at the access policy just created, click on `Add Rule`
 11. And enter the following values to create the rule
-    1.  Enter the `Rule Name` (Example : `End-User Rule`)
-    2.  For `THEN Use this inline hook` select Token inline hook registered previously (`Oauth2 Protected IDMapper`)
+    1.  Enter the `Rule Name` (Example : `CVSClientApp Rule`)
+    2.  For `THEN Use this inline hook` select Token inline hook registered previously (`LoginHelperService`)
     3.  Leave the rest as default
 12. Click `Create Rule`
 13. Copy Issuer url of the authorization server
     1.  Being at the authorization server, navigate to `Settings` tab
     2.  Click the `Metadata URI` link
     3.  Copy the value for `authorization_endpoint` from the metadata and save the value for later use (referred as CLIENT_AUTHORIZE_URL)
-    4.  https://star.oktapreview.com/oauth2/aus5fx72s7ZE7T5bu1d7/v1/authorize
+    4.  Example CLIENT_AUTHORIZE_URL = https://star.oktapreview.com/oauth2/aus5fx72s7ZE7T5bu1d7/v1/authorize
 
 ## Standalone Testing
 1. Generate the Authorization URL for the single page app
@@ -184,7 +184,7 @@
     "ver": 1,
     "jti": "AT.XsIhBnzWGq5rQggz1VAe1ytYYb1Y57mMDgQVMKvuEsc",
     "iss": "https://star.oktapreview.com/oauth2/aus5fx72s7ZE7T5bu1d7",
-    "aud": "Https://End-User.com",
+    "aud": "Https://CVSApp.com",
     "iat": 1663449854,
     "exp": 1663453454,
     "cid": "0oa5fwevhkX4mJhEE1d7",
@@ -195,7 +195,7 @@
     ],
     "auth_time": 1663443209,
     "sub": "bala.ganaparthi@okta.com",
-    "aud1": "Https://End-User.com1"
+    "aud1": "Https://CVSApp.com1"
     }
     ```
 
